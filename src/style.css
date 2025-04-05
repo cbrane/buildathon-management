@@ -1,0 +1,79 @@
+/* Import Bootstrap CSS */
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+body {
+    padding: 20px;
+    background-color: #f8f9fa;
+}
+
+.dashboard-card {
+    margin-bottom: 20px;
+    transition: all 0.3s;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.stat-card {
+    text-align: center;
+    padding: 20px;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 10px 0 5px;
+    color: #0d6efd;
+}
+
+.stat-label {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.stat-description {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.stat-highlight {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #0d6efd;
+}
+
+.team-member {
+    margin-bottom: 5px;
+}
+
+.theme-badge {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+    font-size: 75%;
+    font-weight: 500;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 0.25rem;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.filter-control {
+    margin-bottom: 15px;
+}
+
+#app {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    text-align: left;
+}
