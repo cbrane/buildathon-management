@@ -128,7 +128,9 @@ export default function TeamForm({
     }
     
     const data = {
-      name: team ? team.name : `Team ${Date.now().toString().slice(-5)}`, // Keep existing team number or generate new one
+      // For new teams, we'll assign the team number in TeamManagement.jsx
+      // For existing teams, keep the current name
+      name: team ? team.name : 'TeamTemp', // Temporary placeholder that will be replaced
       leaderId: leaderId,
       leaderName: leaderName,
       college: form.college.value.trim(),

@@ -89,10 +89,9 @@ export default function TeamManagement({ onTeamsChange, onParticipantsChange, in
     return teamsData;
   }
 
-  // Function to ensure teams are numbered sequentially (1, 2, 3, ...) with no gaps
+  // LEGACY function: Only keep for backward compatibility with existing code but don't use for new teams
   async function renumberTeams(teamsData) {
-    // Always renumber teams to ensure consistent ordering
-    console.log("Renumbering teams to ensure sequential order...");
+    console.log("WARNING: Using legacy renumberTeams function - this should only be used for initial setup");
     
     // Sort teams by their current number and creation date
     const sortedTeams = [...teamsData].sort((a, b) => {
@@ -110,7 +109,7 @@ export default function TeamManagement({ onTeamsChange, onParticipantsChange, in
       return dateA - dateB;
     });
     
-    // Always renumber all teams to ensure proper sequence
+    // WARNING: This is only used for initial setup - it renumbers ALL teams!
     for (let i = 0; i < sortedTeams.length; i++) {
       const newTeamNum = i + 1;
       const currentTeamNum = parseInt(sortedTeams[i].name.replace(/\D/g, '')) || 0;
@@ -125,6 +124,22 @@ export default function TeamManagement({ onTeamsChange, onParticipantsChange, in
     
     console.log("Team renumbering complete");
     return sortedTeams;
+  }
+  
+  // Function to get the next available team number without changing existing numbers
+  function getNextTeamNumber(teamsData) {
+    // Find the highest current team number
+    let highestNumber = 0;
+    
+    teamsData.forEach(team => {
+      const teamNumber = parseInt(team.name.replace(/\D/g, '')) || 0;
+      if (teamNumber > highestNumber) {
+        highestNumber = teamNumber;
+      }
+    });
+    
+    // Return the next number
+    return highestNumber + 1;
   }
   
   async function loadData() {
@@ -142,14 +157,14 @@ export default function TeamManagement({ onTeamsChange, onParticipantsChange, in
       // Migrate team names if needed (passing participants to fix leader references)
       const migratedTeams = await migrateTeamNames(teamsData || [], participantsData || []);
       
-      // Ensure teams are numbered sequentially
-      const renumberedTeams = await renumberTeams(migratedTeams);
+      // No longer renumber teams by default - we want to preserve existing team numbers
+      // Note: We keep the migratedTeams as is without renumbering
       
-      setTeams(renumberedTeams);
+      setTeams(migratedTeams);
       setParticipants(participantsData || []);
       
       // Notify parent component if callback exists
-      if (onTeamsChange) onTeamsChange(renumberedTeams);
+      if (onTeamsChange) onTeamsChange(migratedTeams);
     } catch (error) {
       console.error('Error loading teams:', error);
       alert('Failed to load teams. Please try again.');
@@ -166,13 +181,19 @@ export default function TeamManagement({ onTeamsChange, onParticipantsChange, in
         return;
       }
       
-      // Create new team data (we'll number it in the renumbering step)
+      // Get all current teams to determine the next team number
+      const currentTeams = await getAllTeams();
+      const nextTeamNumber = getNextTeamNumber(currentTeams || []);
+      
+      // Create new team data with the next available team number
       const { members, leaderId, ...teamData } = formData;
       const newTeamData = {
         ...teamData,
         leaderId,
-        name: `Team Temp` // Temporary name that will be fixed by renumbering
+        name: `Team ${nextTeamNumber}` // Use the next highest number directly
       };
+      
+      console.log(`Creating new team with number: ${nextTeamNumber}`);
       
       // Create the team
       const newTeam = await addTeam(newTeamData);
@@ -192,18 +213,15 @@ export default function TeamManagement({ onTeamsChange, onParticipantsChange, in
       
       // Fetch updated data
       const updatedParticipantsData = await getAllParticipants();
-      const teamsData = await getAllTeams();
+      const updatedTeams = await getAllTeams();
       
-      // Renumber teams to maintain sequential order
-      const renumberedTeams = await renumberTeams(teamsData || []);
-      
-      // Update state
-      setTeams(renumberedTeams);
+      // Update state without renumbering all teams
+      setTeams(updatedTeams);
       setParticipants(updatedParticipantsData);
       
       // Notify parent component with both updated datasets
       if (onTeamsChange) {
-        onTeamsChange(renumberedTeams);
+        onTeamsChange(updatedTeams);
         
         // If parent provided a participants change handler, use it
         if (onParticipantsChange) {
@@ -317,14 +335,13 @@ export default function TeamManagement({ onTeamsChange, onParticipantsChange, in
       const participantsData = await getAllParticipants();
       setParticipants(participantsData || []);
       
-      // After deleting, reload and renumber teams to maintain sequential order
+      // After deleting, just reload teams WITHOUT renumbering them
       const teamsData = await getAllTeams();
-      const renumberedTeams = await renumberTeams(teamsData || []);
       
-      setTeams(renumberedTeams);
+      setTeams(teamsData || []);
       
       // Notify parent components about both data updates
-      if (onTeamsChange) onTeamsChange(renumberedTeams);
+      if (onTeamsChange) onTeamsChange(teamsData || []);
       if (onParticipantsChange) onParticipantsChange(participantsData || []);
     } catch (error) {
       console.error('Error deleting team:', error);
