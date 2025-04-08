@@ -156,5 +156,4 @@ For added security, use the backup feature to create downloadable snapshots of a
 
 ## Contributors
 
-- The Generator Buildathon Organizing Team
-- Connor Raney - Project Lead
+- Connor Raney - Buildathon Project Lead
