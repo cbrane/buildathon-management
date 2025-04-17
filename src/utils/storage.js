@@ -667,6 +667,54 @@ async function importAllData(jsonData) {
   }
 }
 
+// Function to get checked-in participants for accounting/attendance reporting
+async function exportCheckedInParticipantsCSV() {
+  await initializeStorage();
+  
+  // Get participants and checkins
+  const participants = await localforage.getItem(KEYS.PARTICIPANTS) || [];
+  const checkins = await localforage.getItem(KEYS.CHECKINS) || {};
+  
+  // Filter participants who are checked in
+  const checkedInParticipants = participants.filter(p => checkins[p.id]);
+  
+  // Build CSV header and rows
+  const headers = ['First Name', 'Last Name', 'School', 'Email'];
+  
+  const csvRows = [];
+  csvRows.push(headers.join(','));
+  
+  // Process each checked-in participant
+  checkedInParticipants.forEach(participant => {
+    // Extract first and last name
+    const nameParts = (participant.name || '').split(' ');
+    const firstName = nameParts.length > 0 ? nameParts[0] : '';
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+    
+    // Format fields for CSV and escape values that need it
+    const formatCSVField = (value) => {
+      if (value === null || value === undefined) return '';
+      const stringValue = String(value);
+      // If the value contains a comma, quote, or newline, wrap it in quotes and escape internal quotes
+      if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+        return `"${stringValue.replace(/"/g, '""')}"`;
+      }
+      return stringValue;
+    };
+    
+    const row = [
+      formatCSVField(firstName),
+      formatCSVField(lastName),
+      formatCSVField(participant.college || ''),
+      formatCSVField(participant.email || '')
+    ];
+    
+    csvRows.push(row.join(','));
+  });
+  
+  return csvRows.join('\n');
+}
+
 // Export functions
 export {
   getAllParticipants,
@@ -685,5 +733,6 @@ export {
   removeCheckin,
   importCSVDataToStorage,
   exportAllData,
-  importAllData
+  importAllData,
+  exportCheckedInParticipantsCSV
 };

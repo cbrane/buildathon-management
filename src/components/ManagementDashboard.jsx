@@ -7,7 +7,8 @@ import {
   getAllTeams, 
   getCheckins,
   exportAllData,
-  importAllData
+  importAllData,
+  exportCheckedInParticipantsCSV
 } from '../utils/storage';
 import Papa from 'papaparse';
 
@@ -140,6 +141,39 @@ export default function ManagementDashboard() {
     }
   }
   
+  // Handle exporting checked-in participants to CSV for accounting
+  async function handleExportCheckedInCSV() {
+    try {
+      // Get checked-in participants CSV data
+      const csvData = await exportCheckedInParticipantsCSV();
+      
+      // Create a download link
+      const blob = new Blob([csvData], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      
+      // Create download link and trigger click
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Format date for filename
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0]; // YYYY-MM-DD
+      
+      link.download = `buildathon-attendance-${dateStr}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      alert('Attendance data exported successfully!');
+    } catch (error) {
+      console.error('Error exporting attendance data:', error);
+      alert('Failed to export attendance data. Please try again.');
+    }
+  }
+  
   // Handle importing data from a JSON backup file
   async function handleImportBackup(file) {
     try {
@@ -245,7 +279,17 @@ export default function ManagementDashboard() {
                   onClick={handleExportData}
                 >
                   <i className="bi bi-file-earmark-arrow-down me-2"></i>
-                  Create Backup
+                  Create Full Backup
+                </button>
+              </li>
+              <li>
+                <button 
+                  className="dropdown-item" 
+                  type="button"
+                  onClick={handleExportCheckedInCSV}
+                >
+                  <i className="bi bi-file-earmark-text me-2"></i>
+                  Export Check-ins for Accounting
                 </button>
               </li>
               <li><hr className="dropdown-divider" /></li>
